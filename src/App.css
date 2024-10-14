@@ -1,0 +1,25 @@
+.icons-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 50px;
+  margin-top: 1rem;
+}
+.pencil {
+  font-size: 1.5rem;
+}
+
+.size-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.size-container input {
+  border: none;
+}
+.heading {
+  text-align: center;
+  margin: 0;
+}
