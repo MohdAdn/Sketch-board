@@ -14,6 +14,8 @@ const Drawing = () => {
   const [tool, setTool] = useState("pen");
   const [lines, setLines] = useState([]);
   const isDrawing = useRef(false);
+  const [undoStack, setUndoStack] = useState([]);
+  const [redoStack, setRedoStack] = useState([]);
   const [range, setRange] = useState(1);
   const [color, setColor] = useState("#000000");
   const stageRef = useRef();
@@ -25,27 +27,46 @@ const Drawing = () => {
   };
 
   const handleMouseMove = (e) => {
-    // no drawing - skipping
     if (!isDrawing.current) {
       return;
     }
     const stage = e.target.getStage();
     const point = stage.getPointerPosition();
     let lastLine = lines[lines.length - 1];
-    // add point
-    lastLine.points = lastLine.points.concat([point.x, point.y]);
+    if (!lastLine) return;
 
-    // replace last
-    lines.splice(lines.length - 1, 1, lastLine);
-    setLines(lines.concat());
+    const newLine = {
+      ...lastLine,
+      points: lastLine.points.concat([point.x, point.y]),
+    };
+
+    setLines([...lines.slice(0, lines.length - 1), newLine]);
   };
 
   const handleMouseUp = () => {
     isDrawing.current = false;
+    if (lines.length > 0) {
+      setUndoStack((prev) => [...prev, lines]);
+      setRedoStack([]);
+    }
   };
 
-  function handleRedo() {}
-  function handleUndo() {}
+  function handleUndo() {
+    if (undoStack.length === 0) return;
+    const lastState = undoStack[undoStack.length - 1];
+    setRedoStack((prev) => [...prev, lines]);
+    // setLines(lastState);
+    setUndoStack((prev) => prev.slice(0, -1));
+    setLines((prev) => prev.slice(0, -1));
+  }
+
+  function handleRedo() {
+    if (redoStack.length === 0) return;
+    const nextState = redoStack[redoStack.length - 1];
+    setUndoStack((prev) => [...prev, lines]);
+    setLines(nextState);
+    setRedoStack((prev) => prev.slice(0, -1));
+  }
 
   function handleExport() {
     const uri = stageRef.current.toDataURL();
@@ -60,26 +81,33 @@ const Drawing = () => {
   return (
     <div>
       <div className="icons-container">
+        {/* Tool selection buttons */}
         <span>
           <FontAwesomeIcon
-            className="pencil"
+            className={tool === "pen" ? "pencil active" : "pencil"}
             icon={faPencil}
             onClick={() => setTool("pen")}
           />
         </span>
         <span>
           <FontAwesomeIcon
-            className="pencil"
+            className={tool === "eraser" ? "eraser active" : "eraser"}
             icon={faEraser}
             onClick={() => setTool("eraser")}
           />
         </span>
-        <span>
-          <FontAwesomeIcon className="pencil" icon={faArrowRotateLeft} />
-        </span>
-        <span>
-          <FontAwesomeIcon className="pencil" icon={faArrowRotateRight} />
-        </span>
+        <button onClick={handleUndo}>
+          <span>
+            <FontAwesomeIcon className="pencil" icon={faArrowRotateLeft} />
+          </span>
+        </button>
+
+        <button onClick={handleRedo}>
+          <span>
+            <FontAwesomeIcon className="pencil" icon={faArrowRotateRight} />
+          </span>
+        </button>
+
         <span>
           <FontAwesomeIcon
             className="pencil"
@@ -98,7 +126,6 @@ const Drawing = () => {
           max={10}
         />
         <label>Brush Color</label>
-
         <input
           type="color"
           onChange={(e) => setColor(e.target.value)}
@@ -134,4 +161,5 @@ const Drawing = () => {
     </div>
   );
 };
+
 export default Drawing;

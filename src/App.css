@@ -23,3 +23,9 @@
   text-align: center;
   margin: 0;
 }
+.active {
+  color: red;
+}
+.eraser {
+  font-size: 1.5rem;
+}
