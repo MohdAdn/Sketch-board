@@ -1,5 +1,5 @@
 import React from "react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Stage, Layer, Line, Text } from "react-konva";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPencil } from "@fortawesome/free-solid-svg-icons";
@@ -26,7 +26,7 @@ const Drawing = () => {
     setLines([...lines, { tool, points: [pos.x, pos.y] }]);
   };
 
-  const handleMouseMove = (e) => {
+  const handlePointerMove = (e) => {
     if (!isDrawing.current) {
       return;
     }
@@ -117,9 +117,12 @@ const Drawing = () => {
         </span>
       </div>
       <div className="size-container">
-        <label htmlFor="">Brush Size</label>
+        <label className="label" htmlFor="">
+          Brush Size
+        </label>
         <input
           type="range"
+          className="input"
           onChange={(e) => setRange(e.target.value)}
           value={range}
           min={1}
@@ -138,8 +141,11 @@ const Drawing = () => {
         height={window.innerHeight}
         ref={stageRef}
         onMouseDown={handleMouseDown}
-        onMousemove={handleMouseMove}
+        onTouchStart={handleMouseDown}
+        onPointerMove={handlePointerMove}
+        onTouchMove={handlePointerMove}
         onMouseup={handleMouseUp}
+        onTouchEnd={handleMouseUp}
       >
         <Layer>
           {lines.map((line, i) => (
